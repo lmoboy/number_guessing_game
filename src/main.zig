@@ -1,24 +1,30 @@
 const std = @import("std");
+const sio = @import("sio.zig");
+const heap = std.heap;
+const print = std.debug.print;
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    const curTime = std.time.microTimestamp();
+    var rnd = std.rand.DefaultPrng.init(@intCast(curTime));
+    const allocator = heap.page_allocator;
+    print("Enter min number: ", .{});
+    const min = try sio.iCin(allocator);
+    print("Enter max number: ", .{});
+    const max = try sio.iCin(allocator);
+    print("\n\nTime to guess :D\n Your guess:", .{});
+    const random = rnd.random().intRangeAtMostBiased(i32, min, max);
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
-
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
-}
-
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    while (true) {
+        const guess = try sio.iCin(allocator);
+        if (guess < min or guess > max) {
+            print("Your guess is not in range, try again :D\n Your guess:", .{});
+        } else if (guess < random) {
+            print("Your guess is too low, try again :D\n Your guess:", .{});
+        } else if (guess > random) {
+            print("Your guess is too high, try again :D\n Your guess:", .{});
+        } else {
+            print("You guessed it!!!!", .{});
+            break;
+        }
+    }
 }
